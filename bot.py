@@ -87,7 +87,7 @@ class CTFCommands(commands.Cog, name="CTF Management Commands"):
         self.bot = bot
 
     # Function to create a CTF (creates a channel in active-ctfs category with the name of the CTF)
-    @commands.command(name='ctf_create', help='!ctf_create [name of ctf]')
+    @commands.command(name='ctf_create', help='Creates a CTF channel inside the active-ctfs category.')
     @commands.has_role('Membros')
     async def create_ctf(
         self,
