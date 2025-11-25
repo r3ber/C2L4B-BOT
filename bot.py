@@ -20,7 +20,7 @@ class AdminCommands(commands.Cog, name="Admin Commands"):
         self.bot = bot
 
     @commands.command(name='update', help='Pulls latest changes from git and reloads the bot (Admin only)')
-    @commands.has_permissions(administrator=True)
+    @commands.has_role('admin')
     async def update_bot(self, ctx):
         await ctx.send('Executing Git Pull...')
         
@@ -60,7 +60,7 @@ class AdminCommands(commands.Cog, name="Admin Commands"):
             await ctx.send(f'Error during update: {e}')
     
     @commands.command(name='reload', help='Reloads all Cogs (Admin only)')
-    @commands.has_permissions(administrator=True)
+    @commands.has_role('admin')
     async def reload_cogs(self, ctx):
         try:
             await ctx.send('Reloading cogs...')
@@ -76,7 +76,7 @@ class AdminCommands(commands.Cog, name="Admin Commands"):
             await ctx.send(f'Error reloading: {e}')
     
     @commands.command(name='restart', help='Completely restarts the bot (Admin only)')
-    @commands.has_permissions(administrator=True)
+    @commands.has_role('admin')
     async def restart_bot(self, ctx):
         await ctx.send('Restarting bot...')
         os.execv(sys.executable, ['python3'] + sys.argv)
@@ -169,6 +169,7 @@ class CTFCommands(commands.Cog, name="CTF Management Commands"):
 @bot.event
 async def on_ready():
     await bot.add_cog(CTFCommands(bot))
+    await bot.add_cog(AdminCommands(bot))
     current_time = time.gmtime()
     year = current_time.tm_year
     month = current_time.tm_mon
