@@ -132,7 +132,7 @@ class CTFCommands(commands.Cog, name="CTF Management Commands"):
         print(f'Thread {thread_name} created in CTF channel {name_of_ctf} with description: {description}.')
     
 
-    @commands.command(name='ctf_create', help='Archives a CTF channel by moving it to archived-ctfs category.')
+    @commands.command(name='ctf_archive', help='Archives a CTF channel by moving it to archived-ctfs category.')
     @commands.has_role('Membros')
     async def archive_ctf(
         self,
