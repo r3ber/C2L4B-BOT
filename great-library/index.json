@@ -1,0 +1,28 @@
+{
+    "categories": {
+        "forensics": {
+            "name": "Forensics",
+            "tools": ["wireshark"]
+        },
+        "web": {
+            "name": "Web",
+            "tools": ["burpsuite"]
+        },
+        "crypto": {
+            "name": "Crypto",
+            "tools": ["rsa"]
+        },
+        "reverse": {
+            "name": "Reverse",
+            "tools": ["gdb", "assemblyx86"]
+        },
+        "pwn":{
+            "name": "Pwn",
+            "tools": ["binaryninja"]
+        },
+        "tools": {
+            "name": "Tools",
+            "tools": ["nmap"]
+        }
+    }
+}
