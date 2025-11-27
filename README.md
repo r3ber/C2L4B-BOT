@@ -13,6 +13,49 @@ Discord bot for managing CTF (Capture The Flag) competitions and challenges for 
 - **CTFTime Integration**: View team rankings, information and schedule events
 - **Remote Administration**: Update and reload bot commands without server access
 
+## Project Structure
+
+```
+C2L4B-BOT/
+├── bot.py                      # Main bot entry point
+├── config.py                   # Configuration and environment variables
+├── requirements.txt            # Python dependencies
+├── .env                        # Environment variables (not in repo)
+│
+├── cogs/                       # Bot command modules (Cogs)
+│   ├── __init__.py            # Package initialization
+│   ├── admin.py               # Admin commands (sync, update, reload, restart)
+│   ├── ctf.py                 # CTF management (create, archive, challenges)
+│   ├── ctftime.py             # CTFTime API integration
+│   ├── library.py             # Knowledge library search
+│   └── scoreboard.py          # Internal team scoreboard
+│
+├── data/                       # Bot data storage
+│   └── scoreboard.json        # Team member statistics
+│
+├── great-library/              # Knowledge base (Markdown files)
+│   ├── index.json             # Library index
+│   └── *.md                   # Tool/technique documentation
+│
+└── README.md                   # Project documentation
+```
+
+### Key Files
+
+- **`bot.py`**: Main entry point that initializes the Discord bot and loads all cogs
+- **`config.py`**: Centralized configuration management (tokens, IDs, paths)
+- **`cogs/`**: Modular command groups, each handling specific functionality
+- **`data/`**: Persistent storage for bot data (scoreboard, stats)
+- **`great-library/`**: Markdown-based knowledge base for CTF tools and techniques
+
+### Environment Variables
+
+The bot requires a `.env` file with:
+```env
+token=YOUR_DISCORD_BOT_TOKEN
+announchannel=ANNOUNCEMENT_CHANNEL_ID
+```
+
 ## Commands
 
 ### CTF Management Commands
