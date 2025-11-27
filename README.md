@@ -156,3 +156,4 @@ Contributions are welcome. Please open an issue or submit a pull request.
 ## Authors
 
 - r3ber - Initial work
+- pedroseco7 - Collaborative work
