@@ -6,6 +6,7 @@ import re
 import aiohttp
 from config import ANNOUNCEMENT_CHANNEL_ID
 from datetime import datetime, timezone
+from urllib.parse import quote
 
 class CTFCommands(commands.Cog, name="CTF Management Commands"):
     
@@ -335,7 +336,27 @@ class CTFCommands(commands.Cog, name="CTF Management Commands"):
                     return await response.json(), 200
                 except:
                     return None, 500
+    
+    def generate_google_calendar_link(self, title: str, start_time: datetime, end_time: datetime, description: str, location: str) -> str:
+        """Generate a Google Calendar event link."""
+        
+        #convert to google calendar format
+        start_str = start_time.strftime('%Y%m%dT%H%M%SZ')
+        end_str = end_time.strftime('%Y%m%dT%H%M%SZ')
 
+        title_encoded = quote(title)
+        desc_encoded = quote(description[:1000])
+        location_encoded = quote(location)
+        
+        url = f"https://calendar.google.com/calendar/render?action=TEMPLATE"
+        url += f"&text={title_encoded}"
+        url += f"&dates={start_str}/{end_str}"
+        url += f"&details={desc_encoded}"
+        if location:
+            url += f"&location={location_encoded}"
+        
+        return url
+    
     @commands.hybrid_command(name='schedule', help='Creates a Discord event from a CTFTime event URL.')
     @commands.has_role('Membros')
     async def schedule_ctf(
@@ -507,16 +528,93 @@ class CTFCommands(commands.Cog, name="CTF Management Commands"):
                 value=f"[CTF Website]({url})\n[CTFTime]({ctftime_url_clean})" if url else f"[CTFTime]({ctftime_url_clean})",
                 inline=False
             )
+
+            #generate google calendar link
+            gcal_description = f"CTF Event\n\n{description[:500] if description else ''}\n\nCTFTime: {ctftime_url_clean}"
+            if url:
+                gcal_description += f"\nWebsite: {url}"
+
+            gcal_link = self.generate_google_calendar_link(
+                title=title,
+                start_time=start_time,
+                end_time=end_time,
+                description=gcal_description,
+                location=url if url else ctftime_url_clean
+            )
+
+            embed.add_field(
+                name="Add to Google Calendar",
+                value=f"[Add to Google Calendar]({gcal_link})",
+                inline=False
+            )
             
             embed.set_footer(text=f"Event ID: {scheduled_event.id}")
             
             await ctx.send(f'Event scheduled successfully!', embed=embed)
             print(f'Scheduled event "{title}" created by {ctx.author.display_name}')
+
             
         except discord.Forbidden:
             await ctx.send('Bot does not have permission to create scheduled events.')
         except discord.HTTPException as e:
             await ctx.send(f'Failed to create event: {e}')
+
+    @commands.hybrid_command(name='export_event', help='Export a Discord scheduled event to Google Calendar.')
+    @commands.has_role('Membros')
+    async def export_event(
+        self,
+        ctx,
+        event_id: str = commands.parameter(description="Discord event ID (found in event details)")
+    ):
+        """Export an existing Discord scheduled event to Google Calendar."""
+        try:
+            event = await ctx.guild.fetch_scheduled_event(int(event_id))
+        except (ValueError, discord.NotFound):
+            await ctx.send('Event not found. Make sure you provided a valid event ID.')
+            return
+        except discord.HTTPException as e:
+            await ctx.send(f'Failed to fetch event: {e}')
+            return
+        
+        # Build description
+        description = event.description or "CTF Event scheduled via Discord"
+        if event.location:
+            description += f"\n\nLocation: {event.location}"
+        
+        # Generate Google Calendar link
+        gcal_link = self.generate_google_calendar_link(
+            title=event.name,
+            start_time=event.start_time,
+            end_time=event.end_time,
+            description=description,
+            location=event.location or ""
+        )
+        
+        embed = discord.Embed(
+            title=f"📅 Export: {event.name}",
+            description=f"Click the link below to add this event to your Google Calendar",
+            color=discord.Color.blue()
+        )
+        
+        embed.add_field(
+            name="Start",
+            value=f"<t:{int(event.start_time.timestamp())}:F>",
+            inline=True
+        )
+        embed.add_field(
+            name="End",
+            value=f"<t:{int(event.end_time.timestamp())}:F>",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="Add to Google Calendar",
+            value=f"[Click here to add]({gcal_link})",
+            inline=False
+        )
+        
+        await ctx.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(CTFCommands(bot))
