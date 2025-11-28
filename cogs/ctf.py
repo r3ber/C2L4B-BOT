@@ -555,7 +555,7 @@ class CTFCommands(commands.Cog, name="CTF Management Commands"):
 
             
         except discord.Forbidden:
-            await ctx.send('Bot doeAdd to s not have permission to create scheduled events.')
+            await ctx.send('Bot does not have permission to create scheduled events.')
         except discord.HTTPException as e:
             await ctx.send(f'Failed to create event: {e}')
 
