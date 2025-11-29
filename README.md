@@ -65,7 +65,11 @@ announchannel=ANNOUNCEMENT_CHANNEL_ID
 | `ctf_create` | Creates a new CTF channel in the active-ctfs category | `!ctf_create <ctf_name>` |
 | `ctf_chal` | Creates a challenge thread inside a CTF channel | `!ctf_chal <ctf_name> <category> <title> <description>` |
 | `ctf_archive` | Moves a CTF channel from active-ctfs to archived-ctfs | `!ctf_archive <ctf_name>` |
-| `schedule` | Creates a Discord event from a CTFTime event URL | `!schedule <ctftime_url>` |
+| `schedule`      | Creates a Discord event from a CTFTime event URL and provides a link to add it to your Google Calendar | `!schedule <ctftime_url>` or `/schedule <ctftime_url>` |
+| `export_event`  | Generates a Google Calendar link for any scheduled Discord event   | `!export_event <event_id>` or `/export_event <event_id>` |
+
+**Note:**  
+After creating or exporting an event, the bot will provide a link that lets you quickly add the event to your personal Google Calendar with all relevant details pre-filled.
 
 ### Challenge Status Commands
 
