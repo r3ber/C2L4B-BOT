@@ -9,39 +9,181 @@ class AIAssistantCommands(commands.Cog, name="AI Assistant Commands"):
         genai.configure(api_key=GEMINI_API_KEY)
         self.model = genai.GenerativeModel('models/gemini-2.0-flash')
 
-    @commands.hybrid_command(name='writeup_assist', help='AI assistant for formatting writeups')
+    @commands.hybrid_command(name='writeup_assist', help='Generate a writeup from thread conversation')
     @commands.has_role('Membros')
-    async def writeup_assist(self, ctx, *, content: str):
-        """Help format and structure a CTF writeup."""
+    async def writeup_assist(self, ctx, language: str = 'en', limit: int = 50):
+        """Generate a formatted writeup from the current thread's conversation.
         
-        prompt = f"""You are a CTF writeup assistant. Format this writeup professionally:
+        Args:
+            language: en-english, pt-portuguese
+            limit: number of messages to consider from the thread (default 50)
+        """
 
-{content}
-
-Structure it with:
-1. Challenge Overview
-2. Reconnaissance
-3. Exploitation
-4. Flag
-5. Lessons Learned
-
-Use Markdown formatting. Be concise and technical."""
+        # Validate language
+        if language.lower() not in ['en', 'pt']:
+            await ctx.send('Invalid language! Use `en` for English or `pt` for Portuguese.\nExample: `!writeup_assist pt` or `!writeup_assist en 100`')
+            return
         
-        await ctx.send("A gerar o teu write-up maroto hehe...")
+        lang = language.lower()
+        lang_name = "Portuguese" if lang == 'pt' else "English"
 
+        # Check if command is used in a thread
+        if not isinstance(ctx.channel, discord.Thread):
+            await ctx.send('This command only works inside challenge threads!')
+            return
+        
+        await ctx.send('Reading thread messages and generating writeup...')
+        
         try:
+            # Collect thread messages
+            messages = []
+            async for message in ctx.channel.history(limit=limit, oldest_first=True):
+                # Skip bot messages and commands
+                if message.author.bot:
+                    continue
+                if message.content.startswith('!') or message.content.startswith('/'):
+                    continue
+                
+                # Include message with author
+                messages.append(f"**{message.author.display_name}**: {message.content}")
+            
+            if not messages:
+                await ctx.send('No messages found in this thread to generate a writeup.')
+                return
+            
+            # Combine all messages
+            thread_conversation = "\n".join(messages)
+            thread_name = ctx.channel.name
+            
+            # Language-specific instructions
+            if lang == 'pt':
+                language_instruction = """
+IMPORTANTE: Escreve TODO o writeup em Português (Portugal). Usa terminologia técnica apropriada em português.
+
+Gera um writeup completo de CTF com a seguinte estrutura:
+
+# {thread_name}
+
+## Visão Geral do Desafio
+[Breve descrição do desafio, categoria e dificuldade se mencionado]
+
+## Reconhecimento
+[Análise inicial, o que foi descoberto primeiro, ferramentas usadas para reconhecimento]
+
+## Análise de Vulnerabilidade
+[Que vulnerabilidade ou fraqueza foi identificada]
+
+## Exploração
+[Processo de exploração passo a passo com comandos e raciocínio]
+
+## Solução
+[Como a flag foi obtida]
+
+## Flag
+[A flag se mencionada, ou indica se ainda não foi encontrada]
+
+## Ferramentas Utilizadas
+[Lista de ferramentas e tecnologias mencionadas]
+
+## Lições Aprendidas
+[Principais conclusões e pontos de aprendizagem]
+"""
+            else:
+                language_instruction = """
+IMPORTANT: Write the ENTIRE writeup in English. Use proper technical terminology.
+
+Generate a complete CTF writeup with the following structure:
+
+# {thread_name}
+
+## Challenge Overview
+[Brief description of the challenge, category, and difficulty if mentioned]
+
+## Reconnaissance
+[Initial analysis, what was discovered first, tools used for recon]
+
+## Vulnerability Analysis
+[What vulnerability or weakness was identified]
+
+## Exploitation
+[Step-by-step exploitation process with commands and reasoning]
+
+## Solution
+[How the flag was obtained]
+
+## Flag
+[The flag if mentioned, or indicate if not found yet]
+
+## Tools Used
+[List of tools and technologies mentioned]
+
+## Lessons Learned
+[Key takeaways and learning points]
+"""
+            
+            # Create prompt for Gemini
+            prompt = f"""You are a CTF writeup assistant. Based on this Discord thread conversation about a CTF challenge, create a professional and well-structured writeup.
+
+Challenge Name: {thread_name}
+
+Thread Conversation:
+{thread_conversation}
+
+{language_instruction}
+
+Use Markdown formatting. Be technical and detailed. Include code blocks where appropriate. If information is missing for a section, indicate that clearly."""
+
+
+            # Generate response
             response = self.model.generate_content(prompt)
             
-            # Split long responses
-            if len(response.text) > 1900:
-                chunks = [response.text[i:i+1900] for i in range(0, len(response.text), 1900)]
-                for chunk in chunks:
+            # Split long responses into chunks (Discord limit is 2000 chars)
+            content = response.text
+            
+            if len(content) > 1900:
+                # Send in multiple messages
+                chunks = []
+                current_chunk = ""
+                
+                for line in content.split('\n'):
+                    if len(current_chunk) + len(line) + 1 > 1900:
+                        chunks.append(current_chunk)
+                        current_chunk = line + '\n'
+                    else:
+                        current_chunk += line + '\n'
+                
+                if current_chunk:
+                    chunks.append(current_chunk)
+                
+                # Send first chunk with embed
+                embed = discord.Embed(
+                    title="Generated Writeup",
+                    description="Here's the generated writeup based on thread conversation:",
+                    color=discord.Color.green()
+                )
+                embed.set_footer(text=f"Generated from {len(messages)} messages")
+                await ctx.send(embed=embed)
+                
+                # Send all chunks
+                for i, chunk in enumerate(chunks, 1):
                     await ctx.send(f"```markdown\n{chunk}\n```")
+                    
             else:
-                await ctx.send(f"```markdown\n{response.text}\n```")
+                # Send single message
+                embed = discord.Embed(
+                    title="Generated Writeup",
+                    description="Here's the generated writeup based on thread conversation:",
+                    color=discord.Color.green()
+                )
+                embed.set_footer(text=f"Generated from {len(messages)} messages")
+                await ctx.send(embed=embed)
+                await ctx.send(f"```markdown\n{content}\n```")
+            
+            print(f"Generated writeup for thread '{thread_name}' requested by {ctx.author.display_name}")
                 
         except Exception as e:
             await ctx.send(f"Error generating writeup: {e}")
+            print(f"Error in writeup_assist: {e}")
 
 async def setup(bot):
     await bot.add_cog(AIAssistantCommands(bot))
