@@ -28,7 +28,8 @@ C2L4B-BOT/
 │   ├── ctf.py                 # CTF management (create, archive, challenges)
 │   ├── ctftime.py             # CTFTime API integration
 │   ├── library.py             # Knowledge library search
-│   └── scoreboard.py          # Internal team scoreboard
+│   ├── scoreboard.py          # Internal team scoreboard
+|   └── ai_assistant.py        # AI integration for write-ups, etc...
 │
 ├── data/                       # Bot data storage
 │   └── scoreboard.json        # Team member statistics
