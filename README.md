@@ -112,6 +112,35 @@ After creating or exporting an event, the bot will provide a link that lets you 
 | `reload` | Reloads all command modules without pulling changes | `!reload` |
 | `restart` | Completely restarts the bot process | `!restart` |
 
+### AI Assistant Commands
+
+| Command | Description | Usage |
+|---------|-------------|-------|
+| `writeup_assist` | Generates a professional CTF writeup from thread conversation | `!writeup_assist [language] [limit]` or `/writeup_assist [language] [limit]` |
+
+**AI Assistant Notes:**
+- All AI commands must be used **inside challenge threads**
+- `writeup_assist` supports two languages:
+  - `pt` - Portuguese (Portugal) 🇵🇹
+  - `en` - English (default) 🇬🇧
+- `limit` parameter controls how many messages to analyze (default: 50 for writeup_assist)
+- Examples:
+  - `!writeup_assist pt` - Generate Portuguese writeup
+  - `!writeup_assist en 100` - Generate English writeup from last 100 messages
+  - `!analyze_chal 50` - Analyze last 50 messages
+  - `!ai_hint` - Get a quick hint
+
+**Writeup Structure:**
+The AI generates structured writeups with sections including:
+- Challenge Overview / Visão Geral
+- Reconnaissance / Reconhecimento
+- Vulnerability Analysis / Análise de Vulnerabilidade
+- Exploitation / Exploração
+- Solution / Solução
+- Flag
+- Tools Used / Ferramentas Utilizadas
+- Lessons Learned / Lições Aprendidas  
+
 ## Challenge Status Flow
 
 Challenges follow this status progression:
