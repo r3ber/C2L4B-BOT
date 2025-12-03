@@ -8,7 +8,8 @@ from cogs import (
     CTFCommands,
     CTFTimeCommands,
     LibraryCommands,
-    ScoreboardCommands
+    ScoreboardCommands,
+    AIAssistantCommands
 )
 
 # Setup intents
@@ -29,6 +30,7 @@ async def on_ready():
     await bot.add_cog(CTFTimeCommands(bot))
     await bot.add_cog(LibraryCommands(bot))
     await bot.add_cog(ScoreboardCommands(bot))
+    await bot.add_cog(AIAssistantCommands(bot))
     
     # Log connection
     current_time = time.gmtime()
